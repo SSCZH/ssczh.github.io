@@ -9,25 +9,6 @@ utils.js(window.searchConfig.js).then(() => {
   var client = algoliasearch(window.searchConfig.appId, window.searchConfig.apiKey);
   var index = client.initIndex(window.searchConfig.indexName);
 
-  function getCardHoverApi() {
-    if (typeof stellar === 'undefined' || !stellar.cardHover) return null;
-    return stellar.cardHover;
-  }
-
-  function unmountResultCards(root) {
-    var cardHover = getCardHoverApi();
-    if (cardHover && typeof cardHover.unmountAll === 'function') {
-      cardHover.unmountAll(root);
-    }
-  }
-
-  function mountResultCards(root) {
-    var cardHover = getCardHoverApi();
-    if (cardHover && typeof cardHover.mountAll === 'function') {
-      cardHover.mountAll(root);
-    }
-  }
-
   function filterResults(hits, filterPath) {
     if (!filterPath || filterPath === '/') return hits;
     var regex = new RegExp(filterPath);
@@ -36,7 +17,7 @@ utils.js(window.searchConfig.js).then(() => {
 
   function displayResults(hits) {
     var resultList = document.createElement("ul");
-    resultList.classList.add("search-result-list", "ui-collection-adapter");
+    resultList.classList.add("search-result-list");
     if (hits.length === 0) {
       searchWrapper.classList.add('noresult');
     } else {
@@ -45,27 +26,11 @@ utils.js(window.searchConfig.js).then(() => {
         var contentSnippet = hit._snippetResult.content.value;
         var title = hit.hierarchy.lvl1 || 'Untitled';
         var item = document.createElement("li");
-        var titleSpan = document.createElement("span");
-        titleSpan.className = "search-result-title";
-        titleSpan.textContent = title;
-
-        var link = document.createElement("a");
-        link.className = "card-hover card-hover--spotlight";
-        link.href = hit.url;
-
-        var content = document.createElement("p");
-        content.className = "search-result-content";
-        content.innerHTML = contentSnippet;
-
-        link.appendChild(content);
-        item.appendChild(titleSpan);
-        item.appendChild(link);
+        item.innerHTML = `<a href="${hit.url}"><span class='search-result-title'>${title}</span><p class="search-result-content">${contentSnippet}</p></a>`;
         resultList.appendChild(item);
       });
     }
-    unmountResultCards(resultArea);
     resultArea.replaceChildren(resultList);
-    mountResultCards(resultList);
   }
 
   inputArea.addEventListener("input", function() {
@@ -74,7 +39,6 @@ utils.js(window.searchConfig.js).then(() => {
 
     if (query.length <= 0) {
       searchWrapper.setAttribute('searching', 'false');
-      unmountResultCards(resultArea);
       resultArea.replaceChildren();
       return;
     }
